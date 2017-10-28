@@ -67,7 +67,7 @@ func (bch *API) AllowanceOf(from string, to string) (*big.Int, error) {
 }
 
 func (bch *API) Approve(key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error) {
-	opts := getTxOpts(key, 50000)
+	opts := getTxOpts(key, 48000)
 
 	tx, err := bch.tokenContract.Approve(opts, common.HexToAddress(to), amount)
 	if err != nil {
@@ -77,7 +77,7 @@ func (bch *API) Approve(key *ecdsa.PrivateKey, to string, amount *big.Int) (*typ
 }
 
 func (bch *API) Transfer(key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error) {
-	opts := getTxOpts(key, 50000)
+	opts := getTxOpts(key, 40000)
 
 	tx, err := bch.tokenContract.Transfer(opts, common.HexToAddress(to), amount)
 	if err != nil {
