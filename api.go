@@ -24,8 +24,6 @@ type API struct {
 	client   *ethclient.Client
 	gasPrice int
 
-	txOpts *bind.TransactOpts
-
 	tokenContract *StandardToken
 }
 
@@ -69,8 +67,7 @@ func (bch *API) AllowanceOf(from string, to string) (*big.Int, error) {
 }
 
 func (bch *API) Approve(key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error) {
-	defaultTxOpts := bind.NewKeyedTransactor(key)
-	opts := setGasLimit(defaultTxOpts, 50000)
+	opts := getTxOpts(key, 50000)
 
 	tx, err := bch.tokenContract.Approve(opts, common.HexToAddress(to), amount)
 	if err != nil {
@@ -80,8 +77,7 @@ func (bch *API) Approve(key *ecdsa.PrivateKey, to string, amount *big.Int) (*typ
 }
 
 func (bch *API) Transfer(key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error) {
-	defaultTxOpts := bind.NewKeyedTransactor(key)
-	opts := setGasLimit(defaultTxOpts, 50000)
+	opts := getTxOpts(key, 50000)
 
 	tx, err := bch.tokenContract.Transfer(opts, common.HexToAddress(to), amount)
 	if err != nil {
@@ -91,8 +87,7 @@ func (bch *API) Transfer(key *ecdsa.PrivateKey, to string, amount *big.Int) (*ty
 }
 
 func (bch *API) TransferFrom(key *ecdsa.PrivateKey, from string, to string, amount *big.Int) (*types.Transaction, error) {
-	defaultTxOpts := bind.NewKeyedTransactor(key)
-	opts := setGasLimit(defaultTxOpts, 50000)
+	opts := getTxOpts(key, 50000)
 
 	tx, err := bch.tokenContract.TransferFrom(opts, common.HexToAddress(from), common.HexToAddress(to), amount)
 	if err != nil {
@@ -109,8 +104,8 @@ func (bch *API) TotalSupply() (*big.Int, error) {
 	return totalSupply, nil
 }
 
-func setGasLimit(opts *bind.TransactOpts, gasLimit int64) (*bind.TransactOpts) {
-	newOpts := &opts
-	newOpts.GasLimit = big.NewInt(gasLimit)
-	return *newOpts
+func getTxOpts(key *ecdsa.PrivateKey, gasLimit int64) (*bind.TransactOpts) {
+	opts := bind.NewKeyedTransactor(key)
+	opts.GasLimit = big.NewInt(gasLimit)
+	return opts
 }
