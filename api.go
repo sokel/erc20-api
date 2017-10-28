@@ -19,6 +19,7 @@ type Tokener interface {
 	TransferFrom(key *ecdsa.PrivateKey, from string, to string, amount *big.Int) (*types.Transaction, error)
 	BalanceOf(address string) (*big.Int, error)
 	AllowanceOf(from string, to string) (*big.Int, error)
+	TotalSupply() (*big.Int, error)
 }
 
 func initEthClient(ethEndpoint *string) (client *ethclient.Client, err error) {
@@ -118,4 +119,12 @@ func (bch *API) TransferFrom(key *ecdsa.PrivateKey, from string, to string, amou
 		return nil, err
 	}
 	return tx, err
+}
+
+func (bch *API) TotalSupply() (*big.Int, error){
+	totalSupply, err := bch.tokenContract.TotalSupply(&bind.CallOpts{Pending: true})
+	if err != nil {
+		return nil, err
+	}
+	return totalSupply, nil
 }
