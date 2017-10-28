@@ -9,8 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-const defaultEthEndpoint string = "https://rinkeby.infura.io/00iTrs5PIy0uGODwcsrb"
-
 const defaultGasPrice = 20 * 1000000000
 
 type Tokener interface {
@@ -22,23 +20,6 @@ type Tokener interface {
 	TotalSupply() (*big.Int, error)
 }
 
-func initEthClient(ethEndpoint *string) (client *ethclient.Client, err error) {
-	if ethEndpoint == nil {
-		*ethEndpoint = defaultEthEndpoint
-	}
-	ethClient, err := ethclient.Dial(*ethEndpoint)
-	if err != nil {
-		return nil, err
-	}
-	return ethClient, nil
-}
-
-func setGasLimit(opts *bind.TransactOpts, gasLimit int64) (*bind.TransactOpts) {
-	newOpts := &opts
-	newOpts.GasLimit = big.NewInt(gasLimit)
-	return *newOpts
-}
-
 type API struct {
 	client   *ethclient.Client
 	gasPrice int
@@ -48,8 +29,8 @@ type API struct {
 	tokenContract *StandardToken
 }
 
-func NewAPI(ethEndpoint *string, gasPrice *int, tokenContractAddress string) (*API, error) {
-	client, err := initEthClient(ethEndpoint)
+func NewAPI(ethEndpoint string, gasPrice *int, tokenContractAddress string) (*API, error) {
+	client, err := ethclient.Dial(ethEndpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +53,6 @@ func NewAPI(ethEndpoint *string, gasPrice *int, tokenContractAddress string) (*A
 }
 
 func (bch *API) BalanceOf(address string) (*big.Int, error) {
-
 	balance, err := bch.tokenContract.BalanceOf(&bind.CallOpts{Pending: true}, common.HexToAddress(address))
 	if err != nil {
 		return nil, err
@@ -121,10 +101,16 @@ func (bch *API) TransferFrom(key *ecdsa.PrivateKey, from string, to string, amou
 	return tx, err
 }
 
-func (bch *API) TotalSupply() (*big.Int, error){
+func (bch *API) TotalSupply() (*big.Int, error) {
 	totalSupply, err := bch.tokenContract.TotalSupply(&bind.CallOpts{Pending: true})
 	if err != nil {
 		return nil, err
 	}
 	return totalSupply, nil
+}
+
+func setGasLimit(opts *bind.TransactOpts, gasLimit int64) (*bind.TransactOpts) {
+	newOpts := &opts
+	newOpts.GasLimit = big.NewInt(gasLimit)
+	return *newOpts
 }
