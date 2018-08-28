@@ -11,8 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-var defaultGasPrice = big.NewInt(20 * 1000000000)
-
 type Tokener interface {
 	Approve(key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error)
 	Transfer(key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error)
@@ -33,10 +31,6 @@ func NewAPI(ethEndpoint string, gasPrice *big.Int, tokenContractAddress string) 
 	client, err := ethclient.Dial(ethEndpoint)
 	if err != nil {
 		return nil, err
-	}
-
-	if gasPrice == nil {
-		gasPrice = defaultGasPrice
 	}
 
 	tokenContract, err := NewStandardToken(common.HexToAddress(tokenContractAddress), client)
