@@ -1,13 +1,13 @@
 package api
 
 import (
-	"math/big"
 	"crypto/ecdsa"
+	"math/big"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var defaultGasPrice = big.NewInt(20 * 1000000000)
@@ -105,7 +105,7 @@ func (api *API) TotalSupply() (*big.Int, error) {
 	return totalSupply, nil
 }
 
-func getTxOpts(key *ecdsa.PrivateKey, gasLimit uint64) (*bind.TransactOpts) {
+func getTxOpts(key *ecdsa.PrivateKey, gasLimit uint64) *bind.TransactOpts {
 	opts := bind.NewKeyedTransactor(key)
 	opts.GasLimit = gasLimit
 	return opts
