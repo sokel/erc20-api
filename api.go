@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
+	"context"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -51,25 +52,24 @@ func NewAPI(ethEndpoint string, gasPrice *big.Int, tokenContractAddress string) 
 	return bch, nil
 }
 
-func (api *API) BalanceOf(address string) (*big.Int, error) {
-	balance, err := api.tokenContract.BalanceOf(&bind.CallOpts{Pending: true}, common.HexToAddress(address))
+func (api *API) BalanceOf(ctx context.Context, address string) (*big.Int, error) {
+	balance, err := api.tokenContract.BalanceOf(getCallOpts(ctx), common.HexToAddress(address))
 	if err != nil {
 		return nil, err
 	}
 	return balance, nil
 }
 
-func (api *API) AllowanceOf(from string, to string) (*big.Int, error) {
-	allowance, err := api.tokenContract.Allowance(&bind.CallOpts{Pending: true}, common.HexToAddress(from), common.HexToAddress(to))
+func (api *API) AllowanceOf(ctx context.Context, from string, to string) (*big.Int, error) {
+	allowance, err := api.tokenContract.Allowance(getCallOpts(ctx), common.HexToAddress(from), common.HexToAddress(to))
 	if err != nil {
 		return nil, err
 	}
 	return allowance, nil
 }
 
-func (api *API) Approve(key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error) {
+func (api *API) Approve(ctx context.Context, key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error) {
 	opts := getTxOpts(key, 48000)
-
 	tx, err := api.tokenContract.Approve(opts, common.HexToAddress(to), amount)
 	if err != nil {
 		return nil, err
@@ -77,9 +77,8 @@ func (api *API) Approve(key *ecdsa.PrivateKey, to string, amount *big.Int) (*typ
 	return tx, err
 }
 
-func (api *API) Transfer(key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error) {
+func (api *API) Transfer(ctx context.Context, key *ecdsa.PrivateKey, to string, amount *big.Int) (*types.Transaction, error) {
 	opts := getTxOpts(key, 40000)
-
 	tx, err := api.tokenContract.Transfer(opts, common.HexToAddress(to), amount)
 	if err != nil {
 		return nil, err
@@ -87,9 +86,8 @@ func (api *API) Transfer(key *ecdsa.PrivateKey, to string, amount *big.Int) (*ty
 	return tx, err
 }
 
-func (api *API) TransferFrom(key *ecdsa.PrivateKey, from string, to string, amount *big.Int) (*types.Transaction, error) {
+func (api *API) TransferFrom(ctx context.Context, key *ecdsa.PrivateKey, from string, to string, amount *big.Int) (*types.Transaction, error) {
 	opts := getTxOpts(key, 50000)
-
 	tx, err := api.tokenContract.TransferFrom(opts, common.HexToAddress(from), common.HexToAddress(to), amount)
 	if err != nil {
 		return nil, err
@@ -97,8 +95,8 @@ func (api *API) TransferFrom(key *ecdsa.PrivateKey, from string, to string, amou
 	return tx, err
 }
 
-func (api *API) TotalSupply() (*big.Int, error) {
-	totalSupply, err := api.tokenContract.TotalSupply(&bind.CallOpts{Pending: true})
+func (api *API) TotalSupply(ctx context.Context) (*big.Int, error) {
+	totalSupply, err := api.tokenContract.TotalSupply(getCallOpts(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -109,4 +107,11 @@ func getTxOpts(key *ecdsa.PrivateKey, gasLimit uint64) *bind.TransactOpts {
 	opts := bind.NewKeyedTransactor(key)
 	opts.GasLimit = gasLimit
 	return opts
+}
+
+func getCallOpts(ctx context.Context) *bind.CallOpts {
+	return &bind.CallOpts{
+		Context: ctx,
+		Pending: false,
+	}
 }
